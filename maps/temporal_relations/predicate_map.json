@@ -1,0 +1,32 @@
+{
+    "afterwards":        "intervalAfter",
+    "subsequently":      "intervalAfter",
+    "later":             "intervalAfter",
+    "just_after":        "intervalAfter",
+    "immediately after": "intervalAfter",
+
+    "then":               "intervalBefore",
+    "earlier":            "intervalBefore",
+    "previously":         "intervalBefore",
+    "prior_to":           "intervalBefore",
+    "immediately_before": "intervalBefore",
+
+    "during":        "intervalDuring",
+    "while":         "intervalDuring",
+    "when":          "intervalDuring",
+    "included":      "intervalContains",
+    "contains":      "intervalContains",
+    "encloses":      "intervalContains",
+    "overlaps":      "intervalOverlap",
+    "overlapping":   "intervalOverlap",
+
+    "meets":         "intervalMeets",
+    "met_by":        "intervalMetBy",
+
+    "starts":        "intervalStarts",
+    "ends":          "intervalEnds",
+    "finishes":      "intervalFinishes",
+
+    "simultaneous":    "instantEquals",
+    "concurrent":      "instantEquals"
+}

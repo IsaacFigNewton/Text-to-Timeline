@@ -1,5 +1,3 @@
-
-
 def get_replacements(d: dict) -> dict:
   replacements = list()
   # get a list of the intervals, their sizes, and replacements for each disambiguated referent cluster

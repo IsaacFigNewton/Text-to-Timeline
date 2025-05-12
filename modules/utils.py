@@ -1,11 +1,18 @@
 import networkx as nx
+from networkx import Graph as NXGraph
 import matplotlib.pyplot as plt
+import fredlib as fred
+from rdflib import Graph as RDFGraph
+from intervaltree import IntervalTree
+from rdflib.extras.external_graph_libs import rdflib_to_networkx_graph
+
 
 def get_subtree_text(token):
   lefts = [get_subtree_text(t) for t in token.lefts]
   rights = [get_subtree_text(t) for t in token.rights]
   tokens_in_subtree = lefts + [token.text] + rights
   return " ".join(tokens_in_subtree)
+
 
 def plot_graph_from_edge_list(edges:list):
     # Create a directed graph
@@ -26,3 +33,122 @@ def plot_graph_from_edge_list(edges:list):
     plt.title("Entity Relationship Graph")
     plt.tight_layout()
     plt.show()
+
+
+def murder_orphans(g):
+  # prune orphan nodes
+  for node in list(g.nodes()):
+    if g.degree(node) == 0:
+      g.remove_node(node)
+
+
+def complete_rel_from_partial_match(label:str, relations:set, prefix):
+  for k in relations:
+    if k in label:
+      return add_rel_prefix(k, prefix)
+  return label
+
+
+def add_rel_prefix(rel:str, prefix:str):
+  return f"{prefix}{rel}"
+
+
+def remove_rel_prefix(rel:str, prefix:str):
+  return rel.replace(prefix, "")
+
+
+def get_fred_nx_digraph(text:str, path:str, fred_api_key:str):
+  fred_graph = fred.getFredGraph(
+      text=text,
+      key=fred_api_key,
+      filename=path,
+      prefix="fred:",
+      namespace="http://www.ontologydesignpatterns.org/ont/fred/domain.owl#",
+      wsd=False,
+      wfd=True,
+      wfd_profile='b',
+      tense=True,
+      roles=True,
+      textannotation="earmark",
+      semantic_subgraph=True,
+      response_format="application/rdf+xml"
+    )
+
+  # Load RDF graph
+  g = RDFGraph()
+  g.parse(path, format='xml')
+  print("rdflib Graph loaded successfully with {} triples".format(len(g)))
+  return fred.get_simplified_nx_graph(g)
+
+
+def list_nodes(g, drop_prefix:bool=False):
+  if drop_prefix:
+    return [node.split(" ")[-1] for node, _ in list(g.nodes(data=True))]
+  else:
+    return [node for node, _ in list(g.nodes(data=True))]
+
+
+def list_triples(g, drop_prefix:bool=False):
+  triples = list(g.edges(data=True))
+
+  if drop_prefix:
+    triples = [
+        (
+            subject.split(" ")[-1],
+            predicate["labels"].split(" ")[-1],
+            object1.split(" ")[-1]
+        ) for subject, object1, predicate in triples
+    ]
+
+  else:
+    triples = [
+        (
+            subject,
+            predicate["labels"],
+            object1
+        )
+        for subject, object1, predicate in triples
+    ]
+
+  return triples
+
+
+def print_interval_tree(tree):
+  for interval in tree:
+    print(f"Interval: {interval}")
+    print(f"  Begin: {interval.begin}")
+    print(f"  End: {interval.end}")
+    print(f"  Data: {interval.data}")
+
+
+def plot_interval_tree(tree:IntervalTree, grid:bool=True):
+  # Prepare data
+  intervals = sorted(tree)
+  fig, ax = plt.subplots()
+
+  for i, iv in enumerate(intervals):
+    ax.broken_barh(
+        [(iv.begin, iv.end - iv.begin)],
+         (i - 0.4, 0.8),
+        facecolors='tab:blue'
+    )
+    ax.text(
+        (iv.begin + iv.end) / 2,
+        i,
+        iv.data.name.split(" ")[-1],
+        ha='center',
+        va='center',
+        color='white'
+    )
+
+  ax.set_yticks(range(len(intervals)))
+  ax.set_yticklabels([f"Interval {i+1}" for i in range(len(intervals))])
+  ax.set_xlabel("Timeline")
+  ax.set_title("IntervalTree Visualization")
+
+  if grid:
+    ax.grid(axis='x', linestyle='--', alpha=0.7)
+    # plt.grid(True)
+
+  plt.tight_layout()
+  plt.show()

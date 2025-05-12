@@ -1,0 +1,98 @@
+{
+  "intervalBefore": {
+    "start": 0,
+    "end": 0,
+    "desc": "end of T1 before beginning of T2; start & end both 'before start'"
+  },
+  "intervalMeets": {
+    "start": 0,
+    "end": 1,
+    "desc": "beginning of T1 is before T2’s start; end of T1 coincides with T2’s start"
+  },
+  "intervalIn": {
+    "start": 4,
+    "end": 4,
+    "desc": "T1's start >= T2's start and T1's end <= T2's end",
+    "warn": "info loss due to ambiguity removal"
+  },
+  "intervalOverlaps": {
+    "start": 0,
+    "end": 4,
+    "desc": "start of T1 before T2’s start; end of T1 lies inside T2"
+  },
+  "intervalDuring": {
+    "start": 4,
+    "end": 4,
+    "desc": "both start and end of T1 lie inside T2"
+  },
+  "intervalStarts": {
+    "start": 1,
+    "end": 4,
+    "desc": "start of T1 = start of T2; end of T1 lies inside T2"
+  },
+  "intervalFinishes": {
+    "start": 4,
+    "end": 2,
+    "desc": "start of T1 lies inside T2; end of T1 = end of T2"
+  },
+  "intervalEquals": {
+    "start": 1,
+    "end": 2,
+    "desc": "both start and end of T1 coincide with T2"
+  },
+  "intervalAfter": {
+    "start": 3,
+    "end": 3,
+    "desc": "start of T1 after end of T2 ⇒ start & end both 'after end'"
+  },
+  "intervalMetBy": {
+    "start": 2,
+    "end": 3,
+    "desc": "start of T1 = end of T2; end of T1 after end of T2"
+  },
+  "intervalOverlappedBy": {
+    "start": 4,
+    "end": 3,
+    "desc": "start of T1 lies inside T2; end of T1 after T2’s end"
+  },
+  "intervalContains": {
+    "start": 0,
+    "end": 3,
+    "desc": "start of T1 before T2’s start; end of T1 after T2’s end"
+  },
+  "intervalStartedBy": {
+    "start": 1,
+    "end": 3,
+    "desc": "start of T1 = start of T2; end of T1 after T2’s end"
+  },
+  "intervalFinishedBy": {
+    "start": 0,
+    "end": 2,
+    "desc": "start of T1 before T2’s start; end of T1 = end of T2"
+  },
+  "before": {
+    "start": 0,
+    "end": 0,
+    "desc": "instant relation"
+  },
+  "after": {
+    "start": 3,
+    "end": 3,
+    "desc": "instant relation"
+  },
+  "inside": {
+    "start": 4,
+    "end": 4,
+    "desc": "instant relation"
+  },
+  "hasBeginning": {
+    "start": 1,
+    "end": null,
+    "desc": "instant relation"
+  },
+  "hasEnd": {
+    "start": null,
+    "end": 2,
+    "desc": "instant relation"
+  }
+}

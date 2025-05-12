@@ -1,0 +1,16 @@
+{
+  "time_nouns": [
+      "start",
+      "beginning",
+      "end",
+      "duration",
+      "time"
+  ],
+  "rel_pos_tags": [
+    ["before", "start"],
+    ["sameTimeAs", "start"],
+    ["sameTimeAs", "end"],
+    ["after", "end"],
+    ["during", null]
+]
+}
