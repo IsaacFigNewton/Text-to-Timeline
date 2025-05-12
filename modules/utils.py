@@ -1,7 +1,6 @@
 import networkx as nx
 from networkx import Graph as NXGraph
 import matplotlib.pyplot as plt
-import fredlib as fred
 from rdflib import Graph as RDFGraph
 from intervaltree import IntervalTree
 from rdflib.extras.external_graph_libs import rdflib_to_networkx_graph
@@ -55,30 +54,6 @@ def add_rel_prefix(rel:str, prefix:str):
 
 def remove_rel_prefix(rel:str, prefix:str):
   return rel.replace(prefix, "")
-
-
-def get_fred_nx_digraph(text:str, path:str, fred_api_key:str):
-  fred_graph = fred.getFredGraph(
-      text=text,
-      key=fred_api_key,
-      filename=path,
-      prefix="fred:",
-      namespace="http://www.ontologydesignpatterns.org/ont/fred/domain.owl#",
-      wsd=False,
-      wfd=True,
-      wfd_profile='b',
-      tense=True,
-      roles=True,
-      textannotation="earmark",
-      semantic_subgraph=True,
-      response_format="application/rdf+xml"
-    )
-
-  # Load RDF graph
-  g = RDFGraph()
-  g.parse(path, format='xml')
-  print("rdflib Graph loaded successfully with {} triples".format(len(g)))
-  return fred.get_simplified_nx_graph(g)
 
 
 def list_nodes(g, drop_prefix:bool=False):
