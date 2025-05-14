@@ -73,22 +73,34 @@ def resolve_text(text:str, coref_resolution_model) -> str:
   return doc._.resolved_text
 
 
-def disambiguate_refs(text:str, nlp_model, fast_coref_model) -> tuple:
+def get_clusters(text:str, fast_coref_model) -> dict:
+
   # get the coreference clusters
   preds = fast_coref_model.predict(texts=[text])
+  all_clusters = preds[0].get_clusters(as_strings=False)
 
   # get disambiguated clusters
-  clusters = {f"E{i}": clusters for i, clusters in enumerate(preds[0].get_clusters(as_strings=False))}
+  return {f"E{i}": clusters for i, clusters in enumerate(all_clusters)}
+
+
+def ambiguate_text(resolved_text: str,
+                   nlp_model,
+                   fast_coref_model) -> tuple:
   # restructure the clusters dict for replacement
-  replacements = get_replacements(clusters)
+  replacements = get_replacements(
+    get_clusters(resolved_text, fast_coref_model)
+  )
+
   # replace the cluster matches
   cluster_strings = get_cluster_matches(
-    text,
+    resolved_text,
     replacements,
     nlp_model
   )
+
+  # ambiguate the text
   ambiguated_text = replace_clusters(
-    text,
+    resolved_text,
     replacements,
     nlp_model
   )

@@ -7,14 +7,13 @@ from clean_rdf_graph import *
 from timeline_construction import get_timeline
 
 
-def run_tests(texts:list, model, coref_resolution_model):
+def run_tests(texts:list, nlp_model, fastcoref_model):
   ambiguated_texts = [[t, None] for t in texts]
 
   for i in range(len(texts)):
     _, ambiguated_test = ambiguate_text(texts[i],
-                                        nlp_model=model,
-                                        fast_coref_model=fastcoref_model,
-                                        coref_resolution_model=coref_resolution_model)
+                                        nlp_model=nlp_model,
+                                        fast_coref_model=fastcoref_model)
     # get the coreference clusters
     ambiguated_texts[i][1] = ambiguated_test
 
@@ -28,7 +27,10 @@ if __name__ == "__main__":
 
     fastcoref_model = FCoref()
 
-    coref_resolution_model = spacy.load("en_core_web_sm", exclude=["parser", "lemmatizer", "ner", "textcat"])
+    coref_resolution_model = spacy.load(
+        "en_core_web_sm",
+        exclude=["parser", "lemmatizer", "ner", "textcat"]
+    )
     coref_resolution_model.add_pipe("fastcoref")
 
     tests = [
@@ -47,18 +49,9 @@ if __name__ == "__main__":
     ]
     # run_tests(tests,
     #           default_nlp_model,
-    #           coref_resolution_model)
+    #           fastcoref_model)
     # print("\n\n")
 
-    # test_0 = get_text_info_json(tests[0],
-    #                             nlp_model=default_nlp_model,
-    #                             fastcoref_model=fastcoref_model,
-    #                             coref_resolution_model=coref_resolution_model)
-    # print(json.dumps(test_0, indent=4, default=str))
-    # print("\n\n")
-
-    # plot_graph_from_edge_list(test_0["edges"])
-    # print("\n\n")
 
     with open('./maps/tags.json', 'r', encoding='utf-8') as f:
         all_tags = json.load(f)
@@ -71,10 +64,12 @@ if __name__ == "__main__":
     file_prefix = "test_"
     rdf_temp_prefix = "boxer.owl: temp_"
 
+
     test_0 = resolve_text(
         tests[0],
         coref_resolution_model=coref_resolution_model
     )
+
 
     G0 = get_fred_nx_digraph(test_0, "test_0.rdf", "fred_api_key")
     propagate_types(G0)
@@ -93,9 +88,25 @@ if __name__ == "__main__":
         }
     )
     G0 = disambiguate_predicates(G0, TEMPORAL_PREDICATE_MAP, prefix=rdf_temp_prefix)
+
+
+    test_0 = get_text_info(test_0,
+                   default_nlp_model,
+                   fastcoref_model,
+                   coref_resolution_model)
+    print(json.dumps(test_0, indent=4, default=str))
+    print("\n\n")
+
+    plot_graph_from_edge_list(test_0["edges"])
+    print("\n\n")
+
+    # get all temporal relations in order
+    #   TODO: INTEGRATE WITH EVENT TRIPLE PARSER
+    temp_relations = [[e[0], e[2]["labels"], e[1]]
+                      for e in G0.edges(data=True)
+                      if "temp_" in e[2]["labels"]]
     timeline = get_timeline(
-        g=G0,
-        drop_event_edges=False,
+        event_seq=temp_relations,
         rel_pos_tags=rel_pos_tags,
         temporal_relations_map=temporal_relations_map,
         prefix=rdf_temp_prefix

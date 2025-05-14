@@ -1,7 +1,7 @@
 from clause_simplification import simplify_clause_structure
 from triplet_extraction import get_edges
 from fastcoref_coref_resolution import resolve_text
-from fastcoref_coref_resolution import disambiguate_refs
+from fastcoref_coref_resolution import ambiguate_text
 
 def get_referent_from_cluster(cluster_members):
   return max(cluster_members, key=len)
@@ -33,37 +33,32 @@ def get_inter_cluster_edges(edges:list, clusters:dict) -> list:
   
   return edges
 
-def ambiguate_text(text:str,
-                   nlp_model,
-                   fast_coref_model,
-                   coref_resolution_model) -> tuple:
-  resolved_text = resolve_text(text,
-                               coref_resolution_model=coref_resolution_model)
-  return disambiguate_refs(
-    text=resolved_text,
-    nlp_model=nlp_model,
-    fast_coref_model=fast_coref_model
-  )
 
-def get_text_info_json(text:str,
-                       nlp_model,
-                       fastcoref_model,
-                       coref_resolution_model) -> dict:
+def get_text_info(text:str,
+                   nlp_model,
+                   fastcoref_model,
+                   coref_resolution_model) -> dict:
   doc_info = dict()
 
   doc = nlp_model(text)
 
+  doc_info["disambiguated"] = resolve_text(
+    text,
+    coref_resolution_model=coref_resolution_model
+  )
+
   # restructure the text to simplify the clause structure
   doc_info["restructured"] = simplify_clause_structure(doc, nlp_model=nlp_model)
-  # get clusters, ambiguated text
-  cluster_matches, ambiguated_text = ambiguate_text(text,
-                                                    nlp_model,
-                                                    fastcoref_model,
-                                                    coref_resolution_model)
+
+  # get clusters and their associated referents, ambiguated text
+  cluster_matches, ambiguated_text = ambiguate_text(
+    doc_info["disambiguated"],
+    nlp_model,
+    fastcoref_model
+  )
   doc_info["cluster_matches"] = cluster_matches
   doc_info["ambiguated"] = ambiguated_text
-  
-  doc = nlp_model(ambiguated_text)
+
 
   # get an edge list based on the ambiguated elements
   edges = get_edges(doc_info["restructured"])

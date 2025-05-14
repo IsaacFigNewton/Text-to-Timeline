@@ -49,7 +49,9 @@ def complete_rel_from_partial_match(label:str, relations:set, prefix):
 
 
 def add_rel_prefix(rel:str, prefix:str):
-  return f"{prefix}{rel}"
+  if prefix not in rel:
+    return f"{prefix}{rel}"
+  return rel
 
 
 def remove_rel_prefix(rel:str, prefix:str):
