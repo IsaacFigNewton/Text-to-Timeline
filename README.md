@@ -1,11 +1,14 @@
 # Text-to-Timeline
-### An general-purpose, ML/rule-based hybrid model for timeline reconstruction from natural language English text.
+A general-purpose, ML/rule-based hybrid model for timeline reconstruction from natural language English text.
+Trying to build a model for parsing event sequences from Natural Language (NL) text and timeline reconstruction using as few neural models possible.
+
 ---
 
 ## Dependencies
 ### Required
 - [FastCoref](https://pypi.org/project/fastcoref/)
   - Mainly used for coreference disambiguation
+  - This uses the most complex mo
 - [SpaCy](https://spacy.io)
   - Mainly used for dependency parsing
 - [IntervalTree](https://pypi.org/project/intervaltree/)
