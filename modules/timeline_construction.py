@@ -42,8 +42,11 @@ def get_timeline(event_seq:list,
                  temporal_relations_map:dict,
                  prefix:str) -> (IntervalTree, set):
     # Cast the combined event triples to Event objects
-    event_nodes = {Event(e[0]) for e in event_seq}\
-                    .union({Event(e[2]) for e in event_seq})
+    event_nodes = {e[0]: Event(e[0]) for e in event_seq}
+    event_nodes.update({
+      e[2]: Event(e[2]) for e in event_seq
+      if e[2] not in event_nodes.keys()
+    })
 
     # DSU for boundary unification
     dsu = DSU()
@@ -54,7 +57,7 @@ def get_timeline(event_seq:list,
 
     # Process instant relations (single-boundary)
     for t1, rel_name, t2 in event_seq:
-        e1, e2 = event_nodes[Event(t1)], event_nodes[Event(t2)]
+        e1, e2 = event_nodes[t1], event_nodes[t2]
         i_start, i_end = temporal_relations_map[remove_rel_prefix(rel_name, prefix)]
         # start mapping
         if i_start is not None:
@@ -66,13 +69,13 @@ def get_timeline(event_seq:list,
             apply_tag(tag, e1.end, e2, graph, dsu)
 
     # Ensure each event.start precedes event.end
-    for e in event_nodes:
+    for e in event_nodes.values():
         graph[e.start].add(e.end)
 
     # Add global boundaries
     global_start = BoundaryNode(None, 'start')
     global_end = BoundaryNode(None, 'end')
-    for e in event_nodes:
+    for e in event_nodes.values():
         if not any(e.start in graph[src] for src in graph):
             graph[global_start].add(e.start)
         if len(graph[e.end]) == 0:
@@ -116,8 +119,8 @@ def get_timeline(event_seq:list,
 
     # Build pre-order on containment
     roots = [
-        e for e in event_nodes\
-        if not any(e in parent.children for parent in event_nodes)
+        e for e in event_nodes.values()\
+        if not any(e in parent.children for parent in event_nodes.values())
     ]
 
     ordered = []
