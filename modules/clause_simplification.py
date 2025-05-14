@@ -1,6 +1,6 @@
 from utils import get_subtree_text
 
-def simplify_clause_structure(doc, nlp_model):
+def simplify_clause_structure(doc):
   roots = list()
   for token in doc:
     if token.dep_ == "ROOT":
@@ -37,4 +37,4 @@ def simplify_clause_structure(doc, nlp_model):
     # combine the segmented clauses
     simplified_text += " ".join(primary_clause + secondary_clause)
 
-  return nlp_model(simplified_text)
+  return simplified_text

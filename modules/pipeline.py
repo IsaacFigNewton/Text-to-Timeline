@@ -39,16 +39,13 @@ def get_text_info(text:str,
                    fastcoref_model,
                    coref_resolution_model) -> dict:
   doc_info = dict()
-
-  doc = nlp_model(text)
-
   doc_info["disambiguated"] = resolve_text(
     text,
     coref_resolution_model=coref_resolution_model
   )
 
   # restructure the text to simplify the clause structure
-  doc_info["restructured"] = simplify_clause_structure(doc, nlp_model=nlp_model)
+  doc_info["restructured"] = simplify_clause_structure(nlp_model(doc_info["disambiguated"]))
 
   # get clusters and their associated referents, ambiguated text
   cluster_matches, ambiguated_text = ambiguate_text(
@@ -61,7 +58,7 @@ def get_text_info(text:str,
 
 
   # get an edge list based on the ambiguated elements
-  edges = get_edges(doc_info["ambiguated"])
+  edges = get_edges(nlp_model(doc_info["ambiguated"]))
   doc_info["edges"] = list()
   # resolve references in the edges based on the longest element of the cluster
   for e in edges:
