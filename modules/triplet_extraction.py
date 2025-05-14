@@ -105,7 +105,7 @@ def get_subj_dobj(verb_root, suffix:str):
     prep_addition, obj = get_prep_obj_from_prep_branch(verb_root, obj_pos_tags)
     pred = f"{pred} {prep_addition}" if prep_addition else pred
 
-  edges.append((subj, pred, obj))
+  edges.append((str(subj), str(pred), str(obj)))
 
   return ind_obj_nodes, edges
 

@@ -83,9 +83,9 @@ def get_text_info(text:str,
   # shift edge labels to lower case
   doc_info["edges"] = [
       (
-        e[0].lower(),
-        e[1].lower(),
-        e[2].lower(),
+        e[0].lower() if e[0] else None,
+        e[1].lower() if e[0] else None,
+        e[2].lower() if e[0] else None,
       ) for e in doc_info["edges"]
   ]
 
