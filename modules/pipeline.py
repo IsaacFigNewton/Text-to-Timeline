@@ -61,7 +61,7 @@ def get_text_info(text:str,
 
 
   # get an edge list based on the ambiguated elements
-  edges = get_edges(doc_info["restructured"])
+  edges = get_edges(doc_info["ambiguated"])
   doc_info["edges"] = list()
   # resolve references in the edges based on the longest element of the cluster
   for e in edges:
