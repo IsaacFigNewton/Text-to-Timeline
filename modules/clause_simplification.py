@@ -35,6 +35,6 @@ def simplify_clause_structure(doc, nlp_model):
     secondary_clause += [get_subtree_text(r) for r in root.rights if r.dep_ != "advcl"]
 
     # combine the segmented clauses
-    simplified_text += " ".join(primary_clause + [", then"] + secondary_clause)
+    simplified_text += " ".join(primary_clause + secondary_clause)
 
   return nlp_model(simplified_text)

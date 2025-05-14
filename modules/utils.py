@@ -1,9 +1,7 @@
 import networkx as nx
-from networkx import Graph as NXGraph
 import matplotlib.pyplot as plt
-from rdflib import Graph as RDFGraph
+import Event as Event
 from intervaltree import IntervalTree
-from rdflib.extras.external_graph_libs import rdflib_to_networkx_graph
 
 
 def get_subtree_text(token):
@@ -112,7 +110,7 @@ def plot_interval_tree(tree:IntervalTree, grid:bool=True):
     ax.text(
         (iv.begin + iv.end) / 2,
         i,
-        iv.data.name.split(" ")[-1],
+        iv.data.id.split(" ")[-1],
         ha='center',
         va='center',
         color='white'
