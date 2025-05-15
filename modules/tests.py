@@ -7,20 +7,20 @@ from clean_rdf_graph import *
 from timeline_construction import get_timeline
 
 
-def run_tests(texts:list, nlp_model, fastcoref_model):
-  ambiguated_texts = [[t, None] for t in texts]
+# def run_tests(texts:list, nlp_model, fastcoref_model):
+#   ambiguated_texts = [[t, None] for t in texts]
 
-  for i in range(len(texts)):
-    _, ambiguated_test = ambiguate_text(texts[i],
-                                        nlp_model=nlp_model,
-                                        fast_coref_model=fastcoref_model)
-    # get the coreference clusters
-    ambiguated_texts[i][1] = ambiguated_test
+#   for i in range(len(texts)):
+#     _, ambiguated_test = ambiguate_text(texts[i],
+#                                         nlp_model=nlp_model,
+#                                         fast_coref_model=fastcoref_model)
+#     # get the coreference clusters
+#     ambiguated_texts[i][1] = ambiguated_test
 
-  for test in ambiguated_texts:
-    print(f"original:\n{test[0]}")
-    print(f"disambiguated:\n{test[1]}")
-    # print()
+#   for test in ambiguated_texts:
+#     print(f"original:\n{test[0]}")
+#     print(f"disambiguated:\n{test[1]}")
+#     # print()
 
 if __name__ == "__main__":
     default_nlp_model = spacy.load("en_core_web_sm")
@@ -71,23 +71,23 @@ if __name__ == "__main__":
     )
 
 
-    G0 = get_fred_nx_digraph(test_0, "test_0.rdf", "fred_api_key")
-    propagate_types(G0)
-    prune_subgraph_types(
-        g=G0,
-        node_types_to_drop={
-            "org#ont#framenet#abox#frame:",
-            "owl: Theme",
-            "owl: Cotheme"
-        },
-        edge_types_to_drop={
-            'owl: equivalentClass',
-            'owl: hasDeterminer',
-            'owl: differentFrom',
-            'cotheme'
-        }
-    )
-    G0 = disambiguate_predicates(G0, TEMPORAL_PREDICATE_MAP, prefix=rdf_temp_prefix)
+    # G0 = get_fred_nx_digraph(test_0, "test_0.rdf", "fred_api_key")
+    # propagate_types(G0)
+    # prune_subgraph_types(
+    #     g=G0,
+    #     node_types_to_drop={
+    #         "org#ont#framenet#abox#frame:",
+    #         "owl: Theme",
+    #         "owl: Cotheme"
+    #     },
+    #     edge_types_to_drop={
+    #         'owl: equivalentClass',
+    #         'owl: hasDeterminer',
+    #         'owl: differentFrom',
+    #         'cotheme'
+    #     }
+    # )
+    # G0 = disambiguate_predicates(G0, TEMPORAL_PREDICATE_MAP, prefix=rdf_temp_prefix)
 
 
     test_0 = get_text_info(test_0,
@@ -100,16 +100,16 @@ if __name__ == "__main__":
     plot_graph_from_edge_list(test_0["edges"])
     print("\n\n")
 
-    # get all temporal relations in order
-    #   TODO: INTEGRATE WITH EVENT TRIPLE PARSER
-    temp_relations = [[e[0], e[2]["labels"], e[1]]
-                      for e in G0.edges(data=True)
-                      if "temp_" in e[2]["labels"]]
-    timeline = get_timeline(
-        event_seq=temp_relations,
-        rel_pos_tags=rel_pos_tags,
-        temporal_relations_map=temporal_relations_map,
-        prefix=rdf_temp_prefix
-    )
+    # # get all temporal relations in order
+    # #   TODO: INTEGRATE WITH EVENT TRIPLE PARSER
+    # temp_relations = [[e[0], e[2]["labels"], e[1]]
+    #                   for e in G0.edges(data=True)
+    #                   if "temp_" in e[2]["labels"]]
+    # timeline = get_timeline(
+    #     event_seq=temp_relations,
+    #     rel_pos_tags=rel_pos_tags,
+    #     temporal_relations_map=temporal_relations_map,
+    #     prefix=rdf_temp_prefix
+    # )
 
-    plot_interval_tree(timeline, grid=False)
+    # plot_interval_tree(timeline, grid=False)

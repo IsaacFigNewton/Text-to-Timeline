@@ -3,8 +3,8 @@ from triplet_extraction import get_edges
 from fastcoref_coref_resolution import resolve_text
 from fastcoref_coref_resolution import ambiguate_text
 
-def get_referent_from_cluster(cluster_members):
-  return max(cluster_members, key=len)
+def get_referent_from_cluster(cluster_members) -> str:
+  return max(cluster_members, key=lambda x: len(x[2]))[2]
 
 def get_inter_cluster_edges(edges:list, clusters:dict) -> list:
   
@@ -45,7 +45,7 @@ def get_text_info(text:str,
   )
 
   # restructure the text to simplify the clause structure
-  doc_info["restructured"] = simplify_clause_structure(nlp_model(doc_info["disambiguated"]))
+  doc_info["restructured"] = simplify_clause_structure(nlp_model(text))
 
   # get clusters and their associated referents, ambiguated text
   cluster_matches, ambiguated_text = ambiguate_text(
@@ -64,25 +64,24 @@ def get_text_info(text:str,
   for e in edges:
 
     e_new = e
-    if e[0] in cluster_matches:
+    if e_new[0] in cluster_matches:
       cluster = cluster_matches[e_new[0]]
       longest_string = get_referent_from_cluster(cluster)
       e_new = (longest_string, e_new[1], e_new[2])
 
-    if e[2] in cluster_matches:
+    if e_new[2] in cluster_matches:
       cluster = cluster_matches[e_new[2]]
       longest_string = get_referent_from_cluster(cluster)
       e_new = (e_new[0], e_new[1], longest_string)
     
     doc_info["edges"].append(e_new)
-
   
   # shift edge labels to lower case
   doc_info["edges"] = [
       (
-        e[0].lower() if e[0] else None,
-        e[1].lower() if e[0] else None,
-        e[2].lower() if e[0] else None,
+        (str(e[0])).lower() if e[0] else None,
+        (str(e[1])).lower() if e[1] else None,
+        (str(e[2])).lower() if e[2] else None,
       ) for e in doc_info["edges"]
   ]
 

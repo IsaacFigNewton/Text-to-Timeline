@@ -1,4 +1,11 @@
 def get_replacements(d: dict) -> dict:
+  """
+  returns a list of tuples
+    tuple[0] = start and end index of the match in the original text
+    tuple[1] = placeholder entity
+  """
+
+
   replacements = list()
   # get a list of the intervals, their sizes, and replacements for each disambiguated referent cluster
   span_replacements = [(i, placeholder) for placeholder, intervals in d.items() for i in intervals]
@@ -49,21 +56,6 @@ def get_cluster_matches(text:str,
   return clusters
 
 
-def replace_clusters(text:str,
-                     replacements: list,
-                     model) -> str:
-
-  new_text = list()
-  s = 0
-  for i, r in replacements:
-    new_text.append(text[s:i[0]])
-    new_text.append(r)
-    s = i[1]
-
-  new_text.append(text[s:])
-  return "".join(new_text)
-
-
 def resolve_text(text:str, coref_resolution_model) -> str:
   doc = coref_resolution_model(
     text,
@@ -81,6 +73,20 @@ def get_clusters(text:str, fast_coref_model) -> dict:
 
   # get disambiguated clusters
   return {f"E{i}": clusters for i, clusters in enumerate(all_clusters)}
+
+
+def replace_clusters(text:str,
+                     replacements: list) -> str:
+
+  new_text = list()
+  s = 0
+  for i, r in replacements:
+    new_text.append(text[s:i[0]])
+    new_text.append(r)
+    s = i[1]
+
+  new_text.append(text[s:])
+  return "".join(new_text)
 
 
 def ambiguate_text(resolved_text: str,
@@ -101,8 +107,7 @@ def ambiguate_text(resolved_text: str,
   # ambiguate the text
   ambiguated_text = replace_clusters(
     resolved_text,
-    replacements,
-    nlp_model
+    replacements
   )
 
   return cluster_strings, ambiguated_text
