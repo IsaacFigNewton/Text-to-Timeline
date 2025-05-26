@@ -31,8 +31,7 @@ def get_replacements(d: dict) -> dict:
 
 
 def get_cluster_matches(text:str,
-                     replacements: list,
-                     model) -> dict:
+                     replacements: list) -> dict:
   """
   returns a dict:
     keys correspond to the placeholder entities in the text
@@ -90,7 +89,6 @@ def replace_clusters(text:str,
 
 
 def ambiguate_text(resolved_text: str,
-                   nlp_model,
                    fast_coref_model) -> tuple:
   # restructure the clusters dict for replacement
   replacements = get_replacements(
@@ -100,8 +98,7 @@ def ambiguate_text(resolved_text: str,
   # replace the cluster matches
   cluster_strings = get_cluster_matches(
     resolved_text,
-    replacements,
-    nlp_model
+    replacements
   )
 
   # ambiguate the text

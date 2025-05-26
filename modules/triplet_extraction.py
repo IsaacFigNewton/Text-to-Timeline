@@ -80,10 +80,15 @@ def get_subj(verb_root):
 def handle_complement_phrases(
     token,
     suffix:int,
-    subj=None,
-    pred=None,
-    obj=None) -> tuple[list, list]:
+    subj_tok=None,
+    pred_tok=None,
+    obj_tok=None) -> tuple[list, list]:
+  subj = get_subtree_text(subj_tok) if subj_tok else None
+  pred = get_subtree_text(pred_tok) if pred_tok else None
+  obj = get_subtree_text(obj_tok) if obj_tok else None
   edges = list()
+
+
   # if it's an adjectival complement phrase
   if token.dep_ == "acomp":
     # check if the complement phrase has an object as one of its children
@@ -104,27 +109,28 @@ def handle_complement_phrases(
     # use a placeholder for the indirect object
     ccomp_obj = f"CCOMP_{suffix}"
     edges.append((subj, pred, ccomp_obj))
-
     # recurse on the complement phrase
     comp_nodes, comp_edges = get_subj_dobj(
         token,
         suffix+1
     )
+
     # the first edge will always be between the local subject and obj/ind-obj
     nested_subj = comp_edges[0][0]
     nested_obj = comp_edges[0][2]
-
     # add edges to indicate the indirect object's relation to the nested subject and object
-    edges.append((
-      nested_subj if nested_subj else subj,
-      "subject",
-      ccomp_obj
-    ))
-    edges.append((
-      nested_obj if nested_obj else obj,
-      "object",
-      ccomp_obj
-    ))
+    if nested_subj:
+      edges.append((
+        nested_subj,
+        "subject",
+        ccomp_obj
+      ))
+    if nested_obj:
+      edges.append((
+        nested_obj,
+        "object",
+        ccomp_obj
+      ))
 
     # if the complement phrase is in passive voice,
     #   link the subject of the complement phrase to the predicate using an auxiliary verb
@@ -139,8 +145,7 @@ def handle_complement_phrases(
           pred
         ))
         break
-
-
+    
     # if the subject of the complement phrase
     #   is also the subject of the complement phrase's object (which may be a verb phrase)
     #   prune the subject of the complement phrase's object
@@ -154,19 +159,34 @@ def handle_complement_phrases(
     # add the nodes and edges to the associated lists
     return [ccomp_obj] + comp_nodes,\
             edges + comp_edges
+  
+  
+  # if the child is a conjunction, recurse on the conjunction
+  elif token.dep_ == "conj":
+    comp_nodes, comp_edges = get_subj_dobj(
+      child,
+      suffix+1,
+      subj_tok=subj_tok
+    )
+    
+    # add the nodes and edges to the associated lists
+    return [ccomp_obj] + comp_nodes,\
+            edges + comp_edges
 
   return None, None
 
 def get_subj_dobj(
     verb_root,
-    suffix:int) -> tuple[list, list]:
+    suffix:int,
+    subj_tok=None,
+    obj=None) -> tuple[list, list]:
   ind_obj_nodes = list()
   edges = list()
 
-  subj_tok = get_subj(verb_root)
+  if not subj_tok:
+    subj_tok = get_subj(verb_root)
   subj = get_subtree_text(subj_tok) if subj_tok else None
   pred = verb_root.text
-  obj = None
 
   # Get the direct object and indirect object, as well as any prepositional modifier
   dobj_tok, iobj_tok, prep_modifier_tok = get_verb_conj_objs(verb_root)
@@ -221,9 +241,8 @@ def get_subj_dobj(
       addtl_iobj_nodes, complement_edges = handle_complement_phrases(
         token,
         suffix,
-        subj,
-        pred,
-        obj
+        subj_tok=subj_tok,
+        pred_tok=verb_root
       )
       if addtl_iobj_nodes is not None and complement_edges is not None:
         return ind_obj_nodes + addtl_iobj_nodes,\
@@ -251,7 +270,7 @@ def get_edges(doc):
   # for each noun chunk
   for token in doc:
         # if the  parent of the noun chunk is a verb or auxiliary verb
-        if token.dep_ == "ROOT"\
+        if token.dep_ in {"ROOT"}\
           and token.pos_ in {"VERB", "AUX"}:
 
             # recurse on the children of the verb root

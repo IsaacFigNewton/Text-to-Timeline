@@ -1,5 +1,6 @@
 import json
 import spacy
+from spacy.matcher import Matcher
 from fastcoref import FCoref, spacy_component
 
 from pipeline import *
@@ -7,35 +8,30 @@ from clean_rdf_graph import *
 from timeline_construction import get_timeline
 
 
-# def run_tests(texts:list, nlp_model, fastcoref_model):
-#   ambiguated_texts = [[t, None] for t in texts]
-
-#   for i in range(len(texts)):
-#     _, ambiguated_test = ambiguate_text(texts[i],
-#                                         nlp_model=nlp_model,
-#                                         fast_coref_model=fastcoref_model)
-#     # get the coreference clusters
-#     ambiguated_texts[i][1] = ambiguated_test
-
-#   for test in ambiguated_texts:
-#     print(f"original:\n{test[0]}")
-#     print(f"disambiguated:\n{test[1]}")
-#     # print()
-
 if __name__ == "__main__":
     default_nlp_model = spacy.load("en_core_web_sm")
-
     fastcoref_model = FCoref()
-
     coref_resolution_model = spacy.load(
         "en_core_web_sm",
         exclude=["parser", "lemmatizer", "ner", "textcat"]
     )
     coref_resolution_model.add_pipe("fastcoref")
+    
+    
+    # Set up a Matcher for [made][it][ADJ]
+    matcher = Matcher(default_nlp_model.vocab)
+    pattern = [
+        {"LEMMA": "make", "POS": "VERB"},
+        {"LOWER": "it"},
+        {"POS": {"IN": ["ADJ", "VERB", "NOUN"]}},  # adjectives, participles, or even nouns
+    ]
+    matcher.add("MAKE_IT_PATTERN", [pattern])
+    
 
     tests = [
-        "He bought her the book. She said that he was lying. I believe she understands the issue. He made it clear that he disagreed. They assumed the problem was solved.",
-        # "The frog jumped over the goose. Mr. Holmes is gay. Then the frog fell into the abyss. The goose followed the frog into the abyss and after that ate a different frog.",
+        # "He made it clear that she disagreed."
+        # "He bought her the book. She said that he was lying. I believe she understands the issue. He made it clear that he disagreed. They assumed the problem was solved.",
+        "The frog jumped over the goose. Mr. Holmes is gay. Then the frog fell into the abyss. The goose followed the frog into the abyss and after that ate a different frog.",
         # "Although he was very busy with his work, Peter had had enough of it. He and his wife decided they needed a holiday. They travelled to Spain because they loved the country very much.",
         # "John met Paul after he finished work. He suggested they grab a drink.",
         # "The book was on the table when Sarah handed it to Mary. She smiled and thanked her.",
@@ -65,37 +61,12 @@ if __name__ == "__main__":
     file_prefix = "test_"
     rdf_temp_prefix = "boxer.owl: temp_"
 
-
-    test_0 = resolve_text(
-        tests[0],
-        coref_resolution_model=coref_resolution_model
-    )
-
-
-    # G0 = get_fred_nx_digraph(test_0, "test_0.rdf", "fred_api_key")
-    # propagate_types(G0)
-    # prune_subgraph_types(
-    #     g=G0,
-    #     node_types_to_drop={
-    #         "org#ont#framenet#abox#frame:",
-    #         "owl: Theme",
-    #         "owl: Cotheme"
-    #     },
-    #     edge_types_to_drop={
-    #         'owl: equivalentClass',
-    #         'owl: hasDeterminer',
-    #         'owl: differentFrom',
-    #         'cotheme'
-    #     }
-    # )
-    # G0 = disambiguate_predicates(G0, TEMPORAL_PREDICATE_MAP, prefix=rdf_temp_prefix)
-
-
     test_0 = get_text_info(
-        test_0,
+        tests[0],
         default_nlp_model,
         fastcoref_model,
-        coref_resolution_model
+        coref_resolution_model,
+        matcher
     )
     print(json.dumps(test_0, indent=4, default=str))
     print("\n\n")
@@ -103,7 +74,7 @@ if __name__ == "__main__":
     plot_graph_from_edge_list(
         test_0["edges"],
         k=400,
-        shape=(15, 15)
+        shape=(10, 10)
     )
     print("\n\n")
 

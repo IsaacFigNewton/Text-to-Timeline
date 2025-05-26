@@ -1,6 +1,7 @@
 from triplet_extraction import get_edges
 from fastcoref_coref_resolution import resolve_text
 from fastcoref_coref_resolution import ambiguate_text
+from clause_simplification import *
 
 def get_referent_from_cluster(cluster_members) -> str:
   return max(cluster_members, key=lambda x: len(x[2]))[2]
@@ -37,7 +38,8 @@ def get_inter_cluster_edges(edges:list, clusters:dict) -> list:
 def get_text_info(text:str,
                    nlp_model,
                    fastcoref_model,
-                   coref_resolution_model) -> dict:
+                   coref_resolution_model,
+                   matcher) -> dict:
   doc_info = dict()
   doc_info["disambiguated"] = resolve_text(
     text,
@@ -47,15 +49,18 @@ def get_text_info(text:str,
   # get clusters and their associated referents, ambiguated text
   cluster_matches, ambiguated_text = ambiguate_text(
     doc_info["disambiguated"],
-    nlp_model,
     fastcoref_model
   )
   doc_info["cluster_matches"] = cluster_matches
   doc_info["ambiguated"] = ambiguated_text
+  
+  ambiguated_doc = simplify_made_it(
+    nlp_model(ambiguated_text),
+    matcher)
 
 
   # get an edge list based on the ambiguated elements
-  edges = get_edges(nlp_model(doc_info["ambiguated"]))
+  edges = get_edges(ambiguated_doc)
   doc_info["edges"] = list()
   # resolve references in the edges based on the longest element of the cluster
   for e in edges:
