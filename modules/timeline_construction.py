@@ -39,6 +39,7 @@ def apply_tag(tag, source, target_event, graph, dsu):
 
 def get_timeline(event_seq:list,
                  rel_pos_tags:set,
+                 temporal_predicates_map:dict,
                  temporal_relations_map:dict,
                  prefix:str) -> (IntervalTree, set):
     # Cast the combined event triples to Event objects
@@ -58,7 +59,12 @@ def get_timeline(event_seq:list,
     # Process instant relations (single-boundary)
     for t1, rel_name, t2 in event_seq:
         e1, e2 = event_nodes[t1], event_nodes[t2]
-        i_start, i_end = temporal_relations_map[remove_rel_prefix(rel_name, prefix)]
+        # get the cleaned relation name
+        cleaned_rel_name = remove_rel_prefix(rel_name, prefix)
+        if cleaned_rel_name not in temporal_relations_map:
+            cleaned_rel_name = temporal_predicates_map.get(cleaned_rel_name, cleaned_rel_name)
+        # map the relation to indices
+        i_start, i_end = temporal_relations_map[cleaned_rel_name]
         # start mapping
         if i_start is not None:
             tag = rel_pos_tags[i_start]
