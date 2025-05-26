@@ -11,12 +11,13 @@ def get_inter_cluster_edges(edges:list, clusters:dict) -> list:
   # get a list of nodes that have the word "and" in them
   nodes = set()
   for e in edges:
-    if e[0] not in nodes\
-      and "and" in e[0].split(" "):
-      nodes.add(e[0])
-    if e[2] not in nodes\
-      and "and" in e[0].split(" "):
-      nodes.add(e[2])
+    if e[0] is not None and e[2] is not None:
+      if e[0] not in nodes\
+        and "and" in e[0].split(" "):
+        nodes.add(e[0])
+      if e[2] not in nodes\
+        and "and" in e[0].split(" "):
+        nodes.add(e[2])
   
   # for each node, split on " and "
   for node in nodes:
@@ -86,7 +87,7 @@ def get_text_info(text:str,
   ]
 
   # get the sequence of events in the text
-  events = {e for e in doc_info["edges"] if ("INDOBJ_" not in e[0])}
+  events = {e for e in doc_info["edges"] if (e[0] is not None and ("CCOMP_" not in e[0]))}
   doc_info["event_seq"] = list()
   for e in events:
     for i, edge in enumerate(doc_info["edges"]):

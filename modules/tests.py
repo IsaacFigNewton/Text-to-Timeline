@@ -34,7 +34,8 @@ if __name__ == "__main__":
     coref_resolution_model.add_pipe("fastcoref")
 
     tests = [
-        "The frog jumped over the goose. Mr. Holmes is gay. Then the frog fell into the abyss. The goose followed the frog into the abyss and after that ate a different frog.",
+        "He bought her the book. She said that he was lying. I believe she understands the issue."# He made it clear that he disagreed. They assumed the problem was solved.",
+        # "The frog jumped over the goose. Mr. Holmes is gay. Then the frog fell into the abyss. The goose followed the frog into the abyss and after that ate a different frog.",
         # "Although he was very busy with his work, Peter had had enough of it. He and his wife decided they needed a holiday. They travelled to Spain because they loved the country very much.",
         # "John met Paul after he finished work. He suggested they grab a drink.",
         # "The book was on the table when Sarah handed it to Mary. She smiled and thanked her.",
@@ -90,14 +91,20 @@ if __name__ == "__main__":
     # G0 = disambiguate_predicates(G0, TEMPORAL_PREDICATE_MAP, prefix=rdf_temp_prefix)
 
 
-    test_0 = get_text_info(test_0,
-                   default_nlp_model,
-                   fastcoref_model,
-                   coref_resolution_model)
+    test_0 = get_text_info(
+        test_0,
+        default_nlp_model,
+        fastcoref_model,
+        coref_resolution_model
+    )
     print(json.dumps(test_0, indent=4, default=str))
     print("\n\n")
 
-    plot_graph_from_edge_list(test_0["edges"])
+    plot_graph_from_edge_list(
+        test_0["edges"],
+        k=400,
+        shape=(15, 15)
+    )
     print("\n\n")
 
     # # get all temporal relations in order
