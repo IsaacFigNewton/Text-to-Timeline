@@ -62,6 +62,7 @@ def get_timeline(event_seq:list,
         # get the cleaned relation name
         cleaned_rel_name = remove_rel_prefix(rel_name, prefix)
         if cleaned_rel_name not in temporal_relations_map:
+            cleaned_rel_name = cleaned_rel_name.split(" ")[-1]
             cleaned_rel_name = temporal_predicates_map.get(cleaned_rel_name, cleaned_rel_name)
         # map the relation to indices
         i_start, i_end = temporal_relations_map[cleaned_rel_name]
