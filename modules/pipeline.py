@@ -1,4 +1,3 @@
-from clause_simplification import simplify_clause_structure
 from triplet_extraction import get_edges
 from fastcoref_coref_resolution import resolve_text
 from fastcoref_coref_resolution import ambiguate_text
@@ -44,9 +43,6 @@ def get_text_info(text:str,
     text,
     coref_resolution_model=coref_resolution_model
   )
-
-  # restructure the text to simplify the clause structure
-  doc_info["restructured"] = simplify_clause_structure(nlp_model(text))
 
   # get clusters and their associated referents, ambiguated text
   cluster_matches, ambiguated_text = ambiguate_text(

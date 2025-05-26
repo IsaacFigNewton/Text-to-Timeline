@@ -34,7 +34,7 @@ if __name__ == "__main__":
     coref_resolution_model.add_pipe("fastcoref")
 
     tests = [
-        "He bought her the book. She said that he was lying. I believe she understands the issue."# He made it clear that he disagreed. They assumed the problem was solved.",
+        "He bought her the book. She said that he was lying. I believe she understands the issue. He made it clear that he disagreed. They assumed the problem was solved.",
         # "The frog jumped over the goose. Mr. Holmes is gay. Then the frog fell into the abyss. The goose followed the frog into the abyss and after that ate a different frog.",
         # "Although he was very busy with his work, Peter had had enough of it. He and his wife decided they needed a holiday. They travelled to Spain because they loved the country very much.",
         # "John met Paul after he finished work. He suggested they grab a drink.",

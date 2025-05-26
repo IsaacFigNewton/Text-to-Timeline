@@ -5,10 +5,15 @@ from intervaltree import IntervalTree
 
 
 def get_subtree_text(token, exclude=list()):
+  dep_types_to_exclude = [
+      "punct", "mark"
+  ]
   lefts = [get_subtree_text(t) for t in token.lefts\
-           if t not in exclude]
+           if (t not in exclude)\
+            and (t.dep_ not in dep_types_to_exclude)]
   rights = [get_subtree_text(t) for t in token.rights\
-           if t not in exclude]
+           if (t not in exclude)\
+            and (t.dep_ not in dep_types_to_exclude)]
   tokens_in_subtree = lefts + [token.text] + rights
   return " ".join(tokens_in_subtree)
 

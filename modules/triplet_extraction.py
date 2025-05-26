@@ -58,7 +58,7 @@ def get_valency(dobj, iobj):
 
 def get_subj_from_conj(token):
   for child in token.children:
-    if child.dep_ == "nsubj":
+    if child.dep_ in {"nsubj", "nsubjpass"}:
       return child
   return None
 
@@ -70,7 +70,7 @@ def get_subj(verb_root):
   """
   subj = None
   for token in verb_root.lefts:
-    if token.dep_ == "nsubj":
+    if token.dep_ in {"nsubj", "nsubjpass"}:
       return token
   # if the subject is not found, check the head of the conjunction
   if not subj and verb_root.dep_ == "conj":
@@ -88,16 +88,16 @@ def handle_complement_phrases(
   if token.dep_ == "acomp":
     # check if the complement phrase has an object as one of its children
     dobj_tok, iobj_tok, prep_modifier_tok = get_verb_conj_objs(token)
-    obj = get_subtree_text(dobj_tok) if dobj_tok else None
+    acomp_obj = get_subtree_text(dobj_tok) if dobj_tok else None
     # if this is an intermediate token, such as an adjective, but no object
-    if not obj:
+    if not acomp_obj:
       # combine the children of this node, as well as the old root,
       #   into a predicate phrase
       left_mods = " ".join([t.text for t in token.lefts])
       pred = f"{pred} {left_mods}"
-      obj = get_subtree_text(token)
+      acomp_obj = get_subtree_text(token)
     # add the indirect object node to the list of nodes
-    return [obj], edges
+    return [acomp_obj], edges
 
   # if it's a clausal complement phrase
   elif token.dep_ in {"advcl", "ccomp"}:
@@ -110,19 +110,51 @@ def handle_complement_phrases(
         token,
         suffix+1
     )
-
     # the first edge will always be between the local subject and obj/ind-obj
     nested_subj = comp_edges[0][0]
     nested_obj = comp_edges[0][2]
 
     # add edges to indicate the indirect object's relation to the nested subject and object
-    edges.append((nested_subj if nested_subj else subj, "subject", ccomp_obj))
-    edges.append((nested_obj if nested_obj else obj, "object", ccomp_obj))
+    edges.append((
+      nested_subj if nested_subj else subj,
+      "subject",
+      ccomp_obj
+    ))
+    edges.append((
+      nested_obj if nested_obj else obj,
+      "object",
+      ccomp_obj
+    ))
+
+    # if the complement phrase is in passive voice,
+    #   link the subject of the complement phrase to the predicate using an auxiliary verb
+    for child in token.children:
+      # ensure the clausal complement phrase has an auxiliary verb modifying it
+      #  and no object was found in the complement phrase
+      if child.dep_ == "auxpass" and not nested_obj:
+        # link the subject and current predicate using the auxiliary verb
+        edges.append((
+          nested_subj,
+          get_subtree_text(child),
+          pred
+        ))
+        break
+
+
+    # if the subject of the complement phrase
+    #   is also the subject of the complement phrase's object (which may be a verb phrase)
+    #   prune the subject of the complement phrase's object
+    # remove the subject from the edges
+    comp_edges = [e for e in comp_edges\
+                  if not(obj\
+                    and (subj in e[0])\
+                    and ("subject" in e[1])\
+                    and (obj in e[2]))]
 
     # add the nodes and edges to the associated lists
     return [ccomp_obj] + comp_nodes,\
             edges + comp_edges
-  
+
   return None, None
 
 def get_subj_dobj(
@@ -152,13 +184,23 @@ def get_subj_dobj(
     )
     edges.append((
       subj,
-      pred,
-      iobj
+      "subject",
+      f"DITRANSITIVE_{suffix}"
     ))
     edges.append((
-      subj,
-      f"{pred} {iobj} because of",
-      dobj
+      pred,
+      "action",
+      f"DITRANSITIVE_{suffix}"
+    ))
+    edges.append((
+      iobj,
+      "object",
+      f"DITRANSITIVE_{suffix}"
+    ))
+    edges.append((
+      dobj,
+      "motivator",
+      f"DITRANSITIVE_{suffix}"
     ))
     return ind_obj_nodes, edges
 
@@ -207,18 +249,14 @@ def get_edges(doc):
   verb_roots_checked = set()
 
   # for each noun chunk
-  for chunk in doc.noun_chunks:
-      head = chunk.root.head
-
-      # if the verb root has not been checked yet
-      if head.text not in verb_roots_checked:
-
+  for token in doc:
         # if the  parent of the noun chunk is a verb or auxiliary verb
-        if head.pos in {VERB, AUX}:
+        if token.dep_ == "ROOT"\
+          and token.pos_ in {"VERB", "AUX"}:
 
             # recurse on the children of the verb root
             comp_nodes, comp_edges = get_subj_dobj(
-                head,
+                token,
                 len(ind_obj_nodes)
             )
 
@@ -226,6 +264,6 @@ def get_edges(doc):
             ind_obj_nodes = ind_obj_nodes + comp_nodes
             edges = edges + comp_edges
 
-            verb_roots_checked.add(head.text)
+            verb_roots_checked.add(token.text)
 
   return edges
