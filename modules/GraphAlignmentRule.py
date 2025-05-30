@@ -1,11 +1,10 @@
 
 import numpy as np
-import networkx as nx
 from fuzzywuzzy import fuzz
 from networkx.algorithms import isomorphism
-from typing import Dict, List, Set, Tuple, Optional, Any, Callable
+from typing import List, Set, Tuple
 from abc import ABC, abstractmethod
-from modules.Aligner import Aligner
+from Aligner import Aligner
 
 class GraphAlignmentRule(ABC):
     """

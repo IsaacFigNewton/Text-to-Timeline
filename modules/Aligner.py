@@ -1,6 +1,4 @@
-from abc import ABC, abstractmethod
 import re
-from typing import Dict, List, Tuple
 
 class Aligner:
     def __init__(self, G0, G1):

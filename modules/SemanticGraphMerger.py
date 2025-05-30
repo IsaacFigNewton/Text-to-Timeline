@@ -3,16 +3,8 @@ import networkx as nx
 from scipy.optimize import linear_sum_assignment
 import re
 from typing import Dict, List, Set, Tuple, Optional, Any, Callable
-# Importing alignment interface
-from modules.Aligner import Aligner
-# Importing alignment rules
-from modules.GraphAlignmentRule import GraphAlignmentRule,\
-                                        ExactMatchRule,\
-                                        NamespaceAwareRule,\
-                                        FuzzyStringRule,\
-                                        StructuralSimilarityRule,\
-                                        SubgraphMatchingRule,\
-                                        EmbeddingBasedRule
+from Aligner import Aligner
+from GraphAlignmentRule import *
 
 class SemanticGraphMerger(Aligner):
     """
