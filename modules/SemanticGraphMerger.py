@@ -3,6 +3,7 @@ import networkx as nx
 from scipy.optimize import linear_sum_assignment
 import re
 from typing import Dict, List, Set, Tuple, Optional, Any, Callable
+from POSCategories import POSCategories
 from Aligner import Aligner
 from GraphAlignmentRule import *
 
@@ -35,6 +36,7 @@ class SemanticGraphMerger(Aligner):
         if not callable(normalization_model):
             raise ValueError("normalization_model must be a callable function")
         
+        self.pos_categories = POSCategories()
         self.normalization_model = normalization_model
         self.use_embeddings = use_embeddings
         self.embedding_model = embedding_model
