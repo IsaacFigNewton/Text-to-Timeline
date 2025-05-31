@@ -5,6 +5,8 @@ from networkx.algorithms import isomorphism
 from typing import List, Set, Tuple
 from abc import ABC, abstractmethod
 from Aligner import Aligner
+from NodeWSD import NodeWSD
+from EdgeFD import EdgeFD
 
 class GraphAlignmentRule(ABC):
     """
@@ -54,6 +56,7 @@ class GraphAlignmentRule(ABC):
         """Enable sorting by priority."""
         return self.priority < other.priority
 
+
 class ExactMatchRule(GraphAlignmentRule):
     """Rule for exact string matches between node labels."""
     
@@ -68,6 +71,7 @@ class ExactMatchRule(GraphAlignmentRule):
                 if g0_node == g1_node:
                     matches.append((g0_node, g1_node, 1.0 * self.confidence_multiplier))
         return matches
+
 
 class NamespaceAwareRule(GraphAlignmentRule):
     """Rule for namespace-aware matching after normalization."""
@@ -85,6 +89,7 @@ class NamespaceAwareRule(GraphAlignmentRule):
                 if g0_normalized == g1_normalized:
                     matches.append((g0_node, g1_node, self.confidence_multiplier))
         return matches
+
 
 class FuzzyStringRule(GraphAlignmentRule):
     """Rule for fuzzy string matching using multiple strategies."""
@@ -125,6 +130,7 @@ class FuzzyStringRule(GraphAlignmentRule):
                     best_score * self.confidence_multiplier
                 ))
         return matches
+
 
 class StructuralSimilarityRule(GraphAlignmentRule):
     """Rule for structural similarity based on degree and neighbor patterns."""
@@ -187,6 +193,7 @@ class StructuralSimilarityRule(GraphAlignmentRule):
             if best_match:
                 matches.append((g0_node, best_match, best_score * self.confidence_multiplier))
         return matches
+
 
 class SubgraphMatchingRule(GraphAlignmentRule):
     """Rule for subgraph isomorphism matching."""
@@ -253,6 +260,7 @@ class SubgraphMatchingRule(GraphAlignmentRule):
                 matches.append((g0_node, best_match, best_score * self.confidence_multiplier))
         return matches
 
+
 class EmbeddingBasedRule(GraphAlignmentRule):
     """Rule for embedding-based similarity matching."""
     
@@ -288,4 +296,63 @@ class EmbeddingBasedRule(GraphAlignmentRule):
             if best_match:
                 matches.append((g0_node, best_match, best_score * self.confidence_multiplier))
                 
+        return matches
+    
+class WSDandFDBasedRule(GraphAlignmentRule):
+    """Rule for Word Sense Disambiguation and FrameNet-based matching."""
+    
+    def __init__(self, wsd_model, fn_model, threshold: float = 0.6):
+        super().__init__("WSD and FrameNet", threshold=threshold, confidence_multiplier=1.0, priority=7)
+        self.wsd_model = wsd_model
+        self.fn_model = fn_model
+    
+    def find_matches(self, merger_context: Aligner) -> List[Tuple[str, str, float]]:
+        matches = []
+        
+        # Get WSD for both graphs
+        g0_wsd = NodeWSD(
+            merger_context.G0,
+            nlp_model=merger_context.nlp_model,
+            wsd_model=self.wsd_model
+        )
+        g1_wsd = NodeWSD(
+            merger_context.G1,
+            nlp_model=merger_context.nlp_model,
+            wsd_model=self.wsd_model
+        )
+
+        # Get node frames for both graphs
+        g0_node_frames = EdgeFD(
+            g0_wsd.g,
+            nlp_model=merger_context.nlp_model,
+            wsd_model=self.wsd_model
+        ).node_frames
+        g1_node_frames = EdgeFD(
+            g1_wsd.g,
+            nlp_model=merger_context.nlp_model,
+            wsd_model=self.wsd_model
+        ).node_frames
+
+        # Match nodes based on WSD and FrameNet frames
+        for g0_node, g0_frame in g0_node_frames.items():
+            best_match = None
+            best_score = 0
+            
+            for g1_node, g1_frame in g1_node_frames.items():
+                # check for exact frame matches first
+                if g0_frame == g1_frame:
+                    # Use WSD similarity as confidence score
+                    wsd_similarity = self.wsd_model.similarity(g0_node, g1_node)
+                    
+                    if wsd_similarity >= self.threshold and wsd_similarity > best_score:
+                        best_score = wsd_similarity
+                        best_match = g1_node
+                        
+            if best_match:
+                matches.append((
+                    g0_node,
+                    best_match,
+                    best_score * self.confidence_multiplier
+                ))
+        
         return matches

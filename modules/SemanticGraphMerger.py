@@ -65,9 +65,6 @@ class SemanticGraphMerger(Aligner):
         self.entity_map = dict()
         self.alignment_history = []
         
-        # Initialize rule-based matchers
-        self._initialize_matchers()
-        
         # Set up alignment rules
         if alignment_rules is None:
             self.alignment_rules = self._get_default_rules()
@@ -102,28 +99,11 @@ class SemanticGraphMerger(Aligner):
     def remove_rule(self,
                     rule_name: str):
         """Remove an alignment rule by name."""
-        self.alignment_rules = [r for r in self.alignment_rules if r.name != rule_name]
+        self.alignment_rules = [
+            r for r in self.alignment_rules\
+                if r.name != rule_name
+        ]
     
-
-    def _initialize_matchers(self):
-        """Initialize rule-based matching components."""
-        
-        # Entity name normalization patterns
-        self.entity_patterns = {
-            r'(.+)_\d+$': r'\1',  # Remove numeric suffixes
-            r'domain\.owl:\s*(.+)': r'\1',  # Remove domain.owl prefix
-            r'quantifiers\.owl:\s*(.+)': r'\1',  # Remove quantifiers.owl prefix
-            r'DUL\.owl:\s*(.+)': r'\1',  # Remove DUL.owl prefix
-            r'boxer\.owl:\s*(.+)': r'\1',  # Remove boxer.owl prefix
-        }
-        
-        # Predicate normalization patterns
-        self.predicate_patterns = {
-            r'quantifiers\.owl:\s*hasDeterminer': 'hasDeterminer',
-            r'DUL\.owl:\s*hasQuality': 'hasQuality',
-            r'boxer\.owl:\s*temp_before': 'temp_before',
-        }
-
 
     def progressive_align(self) -> Dict[str, str]:
         """

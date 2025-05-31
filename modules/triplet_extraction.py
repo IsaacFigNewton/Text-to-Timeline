@@ -1,6 +1,9 @@
 from utils import get_subtree_text
 from spacy.symbols import VERB, AUX
-
+import spacy
+import networkx as nx
+from typing import Optional, List, Tuple, Set
+from POSCategories import POSCategories
 
 def get_verb_conj_objs(verb):
     # Sometimes, SpaCy will shit itself and believe that there are multiple direct objects
@@ -286,3 +289,168 @@ def get_edges(doc):
             verb_roots_checked.add(token.text)
 
   return edges
+
+
+class SplitTriplets:
+
+    def __init__(self,
+        subj_edge_label:str="subject",
+        obj_edge_label:str="object"):
+        
+        self.subj_edge_label = subj_edge_label
+        self.obj_edge_label = obj_edge_label
+        self.pos_categories = POSCategories()
+
+    def get_node_subgraph(
+        self,
+        chunk:str,
+        nlp_model,
+        event_id:int=None):
+
+      root = None
+      id = event_id if event_id else int(str(hash(chunk))[:10])
+      chunk_graph = nx.DiGraph()
+      doc = nlp_model(chunk)
+
+      # print(f"entities: {doc.ents}")
+      entity = doc.ents[0] if len(doc.ents) > 0 else None
+
+      # if an entity was extracted from the noun chunk
+      if entity:
+        root = entity.text
+        root_type = "PROPN"
+        chunk_graph.add_edge(
+          root,
+          entity[0].ent_type_,
+          labels="rdf-schema: subClassOf"
+        )
+
+      # otherwise, just try extracting a noun
+      else:
+        for word in doc:
+          if word.pos_ in self.pos_categories.entity_types:
+            root = word.text
+            root_type = "NOUN"
+            break
+
+      if root is None:
+        # try extracting a verb
+        for word in doc:
+          if word.pos_ in self.pos_categories.predicate_types\
+            or word.pos_ in {"ADV"}:
+            root = word.text + "_" + str(id)
+            root_type = word.pos_
+            break
+      if root is None:
+        # check if the chunk is an ADJ
+        if doc[0].pos_ == "ADJ":
+          root = doc[0].text
+          root_type = "ADJ"
+
+      # if root is still None
+      if root is None:
+        print(f"event_id: {id}")
+        print(f"chunk: {chunk}")
+        print(f"chunk pos: {doc[0].pos_}")
+        raise ValueError("No root node found or not implemented.")
+
+      # add other words' dependencies to the graph
+      for word in doc:
+        if word.text not in root:
+          if word.pos_ in self.pos_categories.modifier_types:
+            chunk_graph.add_edge(root, word.text, labels="DUL.owl: hasQuality")
+          elif word.pos_ in self.pos_categories.locator_types:
+            chunk_graph.add_edge(root, word.text, labels="hasSpatiotemporalLocation")
+          elif word.pos_ in self.pos_categories.determiner_types:
+            chunk_graph.add_edge(root, word.text, labels="quantifiers.owl: hasDeterminer")
+          elif word.pos_ in self.pos_categories.quantifier_types:
+            chunk_graph.add_edge(root, word.text, labels="quantifiers.owl: hasQuantity")
+
+      return root, chunk_graph, root_type
+
+
+    def get_triple_subgraph(
+        self,
+        e,
+        nlp_model,
+        event_id:int=None):
+      node_subgraphs = nx.DiGraph()
+
+      # get subgraph for the subject's noun chunk
+      subj, subj_subgraph, subj_type = self.get_node_subgraph(
+          e[0],
+          nlp_model
+      )
+      node_subgraphs.update(subj_subgraph)
+
+      # get subgraph for the predicate's verb phrase
+      pred, pred_subgraph, pred_type = self.get_node_subgraph(
+          e[1],
+          nlp_model,
+          event_id=event_id
+      )
+      node_subgraphs.update(pred_subgraph)
+
+      # get subgraph for the object's noun chunk
+      obj, obj_subgraph, obj_type = self.get_node_subgraph(
+          e[2],
+          nlp_model,
+      )
+
+
+      # if the predicate was an AUX and the object type is an adjective
+      if pred_type == "AUX" and obj_type == "ADJ":
+        node_subgraphs.add_edge(subj, obj, labels="DUL.owl: hasQuality")
+      # otherwise, it should be fine to add the object to the graph as an object
+      else:
+        node_subgraphs.update(obj_subgraph)
+        node_subgraphs.add_edge(
+          pred,
+          obj,
+          labels=self.obj_edge_label
+        )
+
+      node_subgraphs.add_edge(
+        pred,
+        subj,
+        labels=self.subj_edge_label
+      )
+
+      return subj, pred, obj, node_subgraphs
+
+
+    def split_event_triples(self, event_triples:list, nlp_model):
+      event_subgraphs = nx.DiGraph()
+      noun_nodes = set()
+      new_event_seq = list()
+
+      for i, e in enumerate(event_triples):
+        subj, event_root, obj, node_subgraphs = self.get_triple_subgraph(e, nlp_model, i)
+        # add the event root (predicate) to the event sequence
+        #   since a unique id is appended to each predicate node's label,
+        #   there should be no confusion for repeated actions/verbs
+        new_event_seq.append(event_root)
+        # add the noun nodes to the list
+        #   this will be helpful for wsd disambiguation and FRED event association
+        noun_nodes.add(subj)
+        noun_nodes.add(obj)
+        # add the triple's subgraph to the larger graph
+        event_subgraphs.update(node_subgraphs)
+
+      # add temporal relations implied by the event_seq
+      for i in range(len(new_event_seq)-1):
+        event_subgraphs.add_edge(
+          new_event_seq[i],
+          new_event_seq[i+1],
+          labels="boxer.owl: temp_before"
+        )
+
+      return event_subgraphs, new_event_seq, noun_nodes
+
+    def __repr__(self):
+        return f"({self.subj}, {self.pred}, {self.obj})"
+
+    def __eq__(self, other):
+        return (self.subj == other.subj and
+                self.pred == other.pred and
+                self.obj == other.obj)
