@@ -50,15 +50,18 @@ class NodeWSD:
                     context_doc=None) -> str:
         word_doc = self.nlp_model(word)
 
-        # if the thing is more than 1 token, it's probably a noun
-        if (not edge_list) and (context_doc):
+        # if no edge list or context doc was provided
+        if (not edge_list) and (not context_doc):
             pos = None
             context_doc = word_doc
         
+        # if context was provided, but the word is a multi-token phrase (ex: Mr.Holmes),
+        #   assume it's a noun
         elif len(word_doc) > 1:
-            # if the word is a multi-token phrase, assume it's a noun
             pos = "n"
 
+        # if an edge list or context doc was provided
+        #   and the word to be disambiguated is 1 token long
         else:
             # handle words with unique ids
             word = word.split("_")[0]
@@ -69,6 +72,8 @@ class NodeWSD:
                         word,
                         edge_list
                 ))
+            
+            # get a list of POS tags for every occurrence of the word in question
             all_word_pos_tags = list()
             for token in context_doc:
                 if token.text == word:
