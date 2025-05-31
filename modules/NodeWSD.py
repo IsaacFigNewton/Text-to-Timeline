@@ -48,12 +48,15 @@ class NodeWSD:
                     nlp_model,
                     edge_list:list=None,
                     context_doc=None) -> str:
-        word_doc = self.nlp_model(word)
+        if not word:
+          raise ValueError(f"word cannot be {word}")
+        
+        # handle words with unique ids
+        word_doc = self.nlp_model(word.split("_")[0])
 
         # if no edge list or context doc was provided
         if (not edge_list) and (not context_doc):
             pos = None
-            context_doc = word_doc
         
         # if context was provided, but the word is a multi-token phrase (ex: Mr.Holmes),
         #   assume it's a noun
@@ -63,9 +66,6 @@ class NodeWSD:
         # if an edge list or context doc was provided
         #   and the word to be disambiguated is 1 token long
         else:
-            # handle words with unique ids
-            word = word.split("_")[0]
-
             # if no context doc was provided, create one from the edge list
             if not context_doc:
                 context_doc = nlp_model(self.get_context(
@@ -98,7 +98,9 @@ class NodeWSD:
 
             except Exception as ex:
                 pos = None
-                context_doc = word_doc
+
+        if not context_doc:
+          context_doc = word_doc
 
         synset = self.wsd_model(
             context_sentence=context_doc.text,
