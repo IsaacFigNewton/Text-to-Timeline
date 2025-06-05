@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "text_to_timeline"
+version = "0.1.0"
+description = "Knowledge Graph Construction and Timeline Analysis"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "rdflib",
+    "networkx",
+    "spacy",
+    "numpy",
+    "pyinflect",
+    "intervaltree"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"

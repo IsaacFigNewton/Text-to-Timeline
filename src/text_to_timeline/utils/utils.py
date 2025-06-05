@@ -2,8 +2,6 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from intervaltree import IntervalTree
 
-from .Event import Event
-
 
 def get_subtree_text(token, exclude=list()):
   dep_types_to_exclude = [
