@@ -7,7 +7,7 @@ name = "text_to_timeline"
 version = "0.0.1"
 description = "Knowledge Graph Construction and Timeline Analysis"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.9"
 dependencies = [
     "rdflib",
     "networkx",
