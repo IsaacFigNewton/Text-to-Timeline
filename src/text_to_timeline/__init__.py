@@ -31,13 +31,3 @@ from .utils.utils import *
 from .kg_construction.clean_rdf_graph import *
 from .kg_construction.fastcoref_coref_resolution import *
 from .kg_construction.triplet_extraction import *
-
-__version__ = "0.1.0"
-__author__ = "Your Name"
-
-# Optional: define what gets imported with "from package import *"
-# You'll need to define this based on what specific functions/classes you want to expose
-__all__ = [
-    # Add specific function/class names here
-    # Example: 'ClassName', 'function_name', etc.
-]
