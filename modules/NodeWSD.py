@@ -2,7 +2,8 @@ import spacy
 import networkx as nx
 from nltk.wsd import lesk
 from nltk.corpus import wordnet as wn
-from POSCategories import POSCategories
+
+from .POSCategories import POSCategories
 
 class NodeWSD:
     def __init__(self,

@@ -1,5 +1,6 @@
 import re
-from POSCategories import POSCategories
+
+from .POSCategories import POSCategories
 
 class Aligner:
     def __init__(self, G0, G1):

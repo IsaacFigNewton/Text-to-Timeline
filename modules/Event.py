@@ -1,4 +1,4 @@
-from BoundaryNode import BoundaryNode
+from .BoundaryNode import BoundaryNode
 
 # Event with potential children (containment)
 class Event:

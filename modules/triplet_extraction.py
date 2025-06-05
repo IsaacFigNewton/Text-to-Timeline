@@ -1,9 +1,10 @@
-from utils import get_subtree_text
 from spacy.symbols import VERB, AUX
 import spacy
 import networkx as nx
 from typing import Optional, List, Tuple, Set
-from POSCategories import POSCategories
+
+from .utils import get_subtree_text
+from .POSCategories import POSCategories
 
 def get_verb_conj_objs(verb):
     # Sometimes, SpaCy will shit itself and believe that there are multiple direct objects

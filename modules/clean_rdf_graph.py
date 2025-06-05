@@ -1,4 +1,4 @@
-from utils import *
+from .utils import *
 
 # A -type_to_split-> B -other_type-> C
 # will be propagated such that

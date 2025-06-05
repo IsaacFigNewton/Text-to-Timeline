@@ -3,7 +3,8 @@ import spacy
 from nltk.corpus import wordnet as wn
 import nltk
 from nltk.corpus import framenet as fn
-from NodeWSD import NodeWSD
+
+from .NodeWSD import NodeWSD
 
 nltk.download('framenet_v17')
 

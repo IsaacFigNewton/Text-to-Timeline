@@ -1,7 +1,8 @@
 import networkx as nx
 import matplotlib.pyplot as plt
-import Event as Event
 from intervaltree import IntervalTree
+
+from .Event import Event
 
 
 def get_subtree_text(token, exclude=list()):

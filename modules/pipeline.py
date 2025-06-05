@@ -1,7 +1,6 @@
-from triplet_extraction import get_edges
-from fastcoref_coref_resolution import resolve_text
-from fastcoref_coref_resolution import ambiguate_text
-from clause_simplification import *
+from .triplet_extraction import get_edges
+from .fastcoref_coref_resolution import resolve_text, ambiguate_text
+from .clause_simplification import *
 
 def get_referent_from_cluster(cluster_members) -> str:
   return max(cluster_members, key=lambda x: len(x[2]))[2]

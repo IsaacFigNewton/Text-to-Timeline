@@ -1,10 +1,11 @@
 import json
 from collections import defaultdict, deque
 from intervaltree import IntervalTree
-from utils import remove_rel_prefix
-from DSU import DSU
-from BoundaryNode import BoundaryNode
-from Event import Event
+
+from .utils import remove_rel_prefix
+from .DSU import DSU
+from .BoundaryNode import BoundaryNode
+from .Event import Event
 
 # Apply a single rel_pos_tag between a source boundary and a target event
 def apply_tag(tag, source, target_event, graph, dsu):

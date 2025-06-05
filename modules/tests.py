@@ -3,9 +3,9 @@ import spacy
 from spacy.matcher import Matcher
 from fastcoref import FCoref, spacy_component
 
-from pipeline import *
-from clean_rdf_graph import *
-from timeline_construction import get_timeline
+from .pipeline import *
+from .clean_rdf_graph import *
+from .timeline_construction import get_timeline
 
 
 if __name__ == "__main__":

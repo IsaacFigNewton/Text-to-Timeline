@@ -4,9 +4,10 @@ from fuzzywuzzy import fuzz
 from networkx.algorithms import isomorphism
 from typing import List, Set, Tuple
 from abc import ABC, abstractmethod
-from Aligner import Aligner
-from NodeWSD import NodeWSD
-from EdgeFD import EdgeFD
+
+from .Aligner import Aligner
+from .NodeWSD import NodeWSD
+from .EdgeFD import EdgeFD
 
 class GraphAlignmentRule(ABC):
     """

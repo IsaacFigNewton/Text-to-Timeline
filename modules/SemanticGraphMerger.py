@@ -3,9 +3,10 @@ import networkx as nx
 from scipy.optimize import linear_sum_assignment
 import re
 from typing import Dict, List, Set, Tuple, Optional, Any, Callable
-from POSCategories import POSCategories
-from Aligner import Aligner
-from GraphAlignmentRule import *
+
+from .POSCategories import POSCategories
+from .Aligner import Aligner
+from .GraphAlignmentRule import *
 
 class SemanticGraphMerger(Aligner):
     """
