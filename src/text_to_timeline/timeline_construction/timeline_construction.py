@@ -2,7 +2,7 @@ import json
 from collections import defaultdict, deque
 from intervaltree import IntervalTree
 
-from .utils import remove_rel_prefix
+from text_to_timeline.utils.utils import remove_rel_prefix
 from .DSU import DSU
 from .BoundaryNode import BoundaryNode
 from .Event import Event

@@ -1,4 +1,4 @@
-from .utils import *
+from text_to_timeline.utils.utils import *
 
 # A -type_to_split-> B -other_type-> C
 # will be propagated such that
@@ -46,7 +46,9 @@ def prune_subgraph_types(g,
             g.remove_edge(edge[0], edge[1])
 
     # prune orphan nodes
-    murder_orphans(g)
+    for node in list(g.nodes()):
+        if g.degree(node) == 0:
+            g.remove_node(node)
 
 
 def disambiguate_predicate(e, predicate_map:dict):

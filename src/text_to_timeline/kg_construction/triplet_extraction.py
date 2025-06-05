@@ -3,7 +3,7 @@ import spacy
 import networkx as nx
 from typing import Optional, List, Tuple, Set
 
-from .utils import get_subtree_text
+from text_to_timeline.utils.utils import get_subtree_text
 from .POSCategories import POSCategories
 
 def get_verb_conj_objs(verb):
