@@ -33,4 +33,4 @@ from .kg_construction.fastcoref_coref_resolution import *
 from .kg_construction.triplet_extraction import *
 
 # Load map getters
-from .maps import load_tags, load_pronouns, load_allen_intervals, load_predicate_map
+from .maps import *
