@@ -164,20 +164,20 @@ def handle_complement_phrases(
     return [ccomp_obj] + comp_nodes,\
             edges + comp_edges
   
-  
-  # if the child is a conjunction, recurse on the conjunction
-  elif token.dep_ == "conj":
-    comp_nodes, comp_edges = get_subj_dobj(
-      child,
-      suffix+1,
-      subj_tok=subj_tok
-    )
+  # TODO: handle conjunctions
+  # # if the child is a conjunction, recurse on the conjunction
+  # elif token.dep_ == "conj":
+  #   comp_nodes, comp_edges = get_subj_dobj(
+  #     child,
+  #     suffix+1,
+  #     subj_tok=subj_tok
+  #   )
     
-    # add the nodes and edges to the associated lists
-    return [ccomp_obj] + comp_nodes,\
-            edges + comp_edges
+  #   # add the nodes and edges to the associated lists
+  #   return [ccomp_obj] + comp_nodes,\
+  #           edges + comp_edges
 
-  return None, None
+  return list(), list()
 
 def get_subj_dobj(
     verb_root,
