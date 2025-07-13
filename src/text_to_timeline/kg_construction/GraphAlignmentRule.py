@@ -1,6 +1,5 @@
 
 import numpy as np
-from fuzzywuzzy import fuzz
 from networkx.algorithms import isomorphism
 from typing import List, Set, Tuple
 from abc import ABC, abstractmethod
@@ -89,47 +88,6 @@ class NamespaceAwareRule(GraphAlignmentRule):
                 g1_normalized = merger_context._normalize_entity_name(g1_node)
                 if g0_normalized == g1_normalized:
                     matches.append((g0_node, g1_node, self.confidence_multiplier))
-        return matches
-
-
-class FuzzyStringRule(GraphAlignmentRule):
-    """Rule for fuzzy string matching using multiple strategies."""
-    
-    def __init__(self, threshold: float = 0.8):
-        super().__init__("Fuzzy String", threshold=threshold, confidence_multiplier=1.0, priority=3)
-    
-    def find_matches(self,
-                     g0_nodes: Set[str],
-                     g1_nodes: Set[str], 
-                    merger_context: Aligner) -> List[Tuple[str, str, float]]:
-        matches = []
-        for g0_node in g0_nodes:
-            best_match = None
-            best_score = 0
-            
-            for g1_node in g1_nodes:
-                # Try multiple fuzzy matching strategies
-                ratio_score = fuzz.ratio(g0_node.lower(), g1_node.lower()) / 100.0
-                partial_score = fuzz.partial_ratio(g0_node.lower(), g1_node.lower()) / 100.0
-                token_sort_score = fuzz.token_sort_ratio(g0_node.lower(), g1_node.lower()) / 100.0
-                
-                # Use the best score
-                score = max(
-                    ratio_score,
-                    partial_score,
-                    token_sort_score
-                )
-                
-                if score >= self.threshold and score > best_score:
-                    best_score = score
-                    best_match = g1_node
-                    
-            if best_match:
-                matches.append((
-                    g0_node,
-                    best_match,
-                    best_score * self.confidence_multiplier
-                ))
         return matches
 
 
@@ -226,25 +184,6 @@ class SubgraphMatchingRule(GraphAlignmentRule):
                 
                 # Use NetworkX's subgraph matching
                 try:
-                    if G0.is_directed() and G1.is_directed():
-                        matcher = isomorphism.DiGraphMatcher(
-                            g0_subgraph, g1_subgraph,
-                            node_match=lambda n1, n2: fuzz.ratio(str(n1), str(n2)) > 80,
-                            edge_match=lambda e1, e2: fuzz.ratio(
-                                str(e1.get('labels', '')), 
-                                str(e2.get('labels', ''))
-                            ) > 70
-                        )
-                    else:
-                        matcher = isomorphism.GraphMatcher(
-                            g0_subgraph, g1_subgraph,
-                            node_match=lambda n1, n2: fuzz.ratio(str(n1), str(n2)) > 80,
-                            edge_match=lambda e1, e2: fuzz.ratio(
-                                str(e1.get('labels', '')), 
-                                str(e2.get('labels', ''))
-                            ) > 70
-                        )
-                    
                     if matcher.subgraph_is_isomorphic():
                         # Calculate similarity based on subgraph size and structure
                         score = min(len(g0_subgraph.nodes), len(g1_subgraph.nodes)) / max(len(g0_subgraph.nodes), len(g1_subgraph.nodes))
